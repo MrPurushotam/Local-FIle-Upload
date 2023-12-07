@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>learning file upload</title>
+    <style>
+        .title{
+            text-align: center;
+            margin: 1vh auto;
+        }
+        .parent-div{
+            border: 1px solid black;
+            width: 70vw;
+            height: 65vh;
+            overflow: auto;
+            margin:2vh auto;
+        }
+        .inner-title{
+            text-align: center;
+            border-left: 0.5vh solid darkgreen;
+            border-right: 0.5vh solid darkgreen;
+            font-size: 2.5vh;
+            width: 90%;
+            margin:0.6vh auto;
+        }
+        .child-div{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            width: 33vw;
+            height: 30vh;
+            float: left;
+            border: 1px solid red;
+            font-size: 2.5vh;
+            margin: 0.5vh 1vh;
+        }
+        .btn{
+            display: block;
+            width: 90%;
+            padding: 0.8vh;
+            font-size: 2.8vh;
+            margin:0.5vh auto; 
+            border-radius: 2vw;
+            font-weight: 600;
+            background-color: rgb(6, 205, 205);
+        }
+        .btn:hover{
+            background-color:  rgb(7, 176, 176);
+        }        
+        .input-file{
+            margin: 2vh auto;
+            display: block;
+            font-size: 2vh;
+        }
+        .final-message{
+            width: 90%;
+            max-height: 5vh;
+            height: 35px;
+            padding: 0.5vh;
+            margin: 0.5vh auto;
+            color: #000814;
+            background-color: #ffc300;
+            border-radius: 5vh;
+            border: 1px solid rgb(0, 0, 0);
+            text-align: center;
+            font-weight: 600;
+        }
+        .removeclass{
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">Handling File Upload Using Node+MongoD+Html</h1>
+    <div class="parent-div">
+        <div class="child-div">
+            <h2 class="inner-title">Single File Upload</h2>
+            <input type="file" required accept="image/*" id="singlefile" class="input-file">
+            <button onclick="upload('single')" class="btn">upload</button>
+            <p id="final-message-single" class="final-message removeclass"></p>
+        </div>
+        <div class="child-div">
+            <h2 class="inner-title">Multiple File Upload</h2>
+            <input type="file" name="images" required multiple accept="image/*" id="multiplefile"class="input-file">
+            <button onclick="upload('multiple')"class="btn">upload</button>
+            <p id="final-message-multiple-image" class="final-message removeclass"></p>
+        </div>
+        <div class="child-div">
+            <h2 class="inner-title">Multiple Video Upload</h2>
+            <input type="file" name="videos" required multiple accept="video/*" id="multiplevideofile"class="input-file">
+            <button onclick="upload('multipleVideo')"class="btn">upload</button>
+            <p id="final-message-multiple-video" class="final-message removeclass"></p>
+        </div>
+    </div>
+    <script>
+        const upload=async(type)=>{
+            const formData=new FormData();
+            if(type==="single"){
+                const file=document.querySelector('#singlefile').files[0]
+                formData.append('file',file)
+                const resp=await fetch('http://localhost:3001/singlefile',{
+                    method:'POST',
+                    body:formData
+                })
+                const json=await resp.json()
+                console.log(json)
+                if(json.status===200){
+                    document.querySelector('#singlefile').value=""
+                    document.querySelector('#final-message-single').textContent=json.message
+                    document.querySelector('#final-message-single').classList.remove('removeclass')
+                }
+            }else if(type==='multipleVideo'){
+                const files=document.querySelector('#multiplevideofile').files
+                console.log(files)
+                Object.values(files).map((file,i)=>{
+                    formData.append('videos',file)
+                })
+                formData.append('id',1536)
+                const resp=await fetch('http://localhost:3001/multiplevideos/1536',{
+                    method:"POST",body:formData
+                })
+                const json=await resp.json()
+
+                if(json.status===200){
+                    document.querySelector('#multiplevideofile').value=[]
+                    document.querySelector('#final-message-multiple-video').textContent=json.message
+                    document.querySelector('#final-message-multiple-video').classList.remove('removeclass')
+                }
+                console.log(json)
+            }else{
+                const files=document.querySelector('#multiplefile').files
+                console.log(files)
+                // Object.keys(files).forEach((key,i)=>{
+                //     console.log(i,"  ",files.item(key))
+                // })
+                // console.log( Object.values(files))
+                Object.values(files).map((file,i)=>{
+                    formData.append('images',file)
+                })
+                // formData.append('images',Object.values(files))
+                formData.append('id',1536)
+                const resp=await fetch('http://localhost:3001/multiplefile/1536',{
+                    method:"POST",body:formData
+                })
+                const json=await resp.json()
+                if(json.status===200){
+                    document.querySelector('#multiplefile').value=[]
+                    document.querySelector('#final-message-multiple-image').textContent=json.message
+                    document.querySelector('#final-message-multiple-image').classList.remove('removeclass')
+                }
+            }
+        }
+    </script>
+</body>
+</html>
