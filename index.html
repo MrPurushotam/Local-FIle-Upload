@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>learning file upload</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
         .title{
             text-align: center;
@@ -36,7 +37,7 @@
             font-size: 2.5vh;
             margin: 0.5vh 1vh;
         }
-        .btn{
+        .btn,#upload-btn,.final-upload-btn{
             display: block;
             width: 90%;
             padding: 0.8vh;
@@ -46,9 +47,12 @@
             font-weight: 600;
             background-color: rgb(6, 205, 205);
         }
-        .btn:hover{
+        .btn:hover,#upload-btn:hover{
             background-color:  rgb(7, 176, 176);
-        }        
+        }
+        .final-upload-btn:hover{
+            background-color:rgb(201, 66, 66) !important;
+        }
         .input-file{
             margin: 2vh auto;
             display: block;
@@ -70,6 +74,49 @@
         .removeclass{
             opacity: 0;
         }
+        .parent-2{
+            border: 1px solid black;
+            width: 70vw;
+            max-height: calc(100vh-65vh-10vh);
+            overflow: auto;
+            margin:2vh auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-size: 3vh;
+        }
+        #form1{
+            width: 70%;
+            margin: 1vh auto;
+            border: 1px solid red;
+            padding: 0.5vh;            
+        }
+        .input-elements{
+            display: block;
+            width: 75%;
+            padding: 0.5vh;
+        }
+        .icon{
+            text-align: center;
+            color: #000814;
+            font-size: 5vh;
+        }
+        #video{
+            display: none;
+        }
+        #form1 input[type="text"]{
+            font-size: 2.5vh;
+            font-weight:550 ;
+            max-height: 3vh;
+            overflow-y: auto;
+            word-wrap: break-word;
+            word-break: normal;
+        }
+        .final-upload-btn{
+            background-color: rgb(218, 71, 71);
+            color: #000814;
+        }
     </style>
 </head>
 <body>
@@ -78,7 +125,7 @@
         <div class="child-div">
             <h2 class="inner-title">Single File Upload</h2>
             <input type="file" required accept="image/*" id="singlefile" class="input-file">
-            <button onclick="upload('single')" class="btn">upload</button>
+            <button onclick="upload('single')" class="btn" >upload</button>
             <p id="final-message-single" class="final-message removeclass"></p>
         </div>
         <div class="child-div">
@@ -94,7 +141,66 @@
             <p id="final-message-multiple-video" class="final-message removeclass"></p>
         </div>
     </div>
+    <div class="parent-2">
+        <h2 class="inner-title">Multiple Video Upload Individually</h2>
+        <div id="form1">
+            <label for="title">Video Title
+                <input type="text" id="title" class="input-elements" name="title" required>
+            </label>
+
+            <label for="description">Video Description
+                <input type="text" id="description" class="input-elements" name="description" required>
+            </label>
+
+            <label for="video"><span class="material-symbols-outlined icon">upload</span>
+                <input type="file" required accept="video/*" name="video" class="input-elements" id="video">
+            </label>
+
+            <input type="button" value="Upload Lecture" onclick="uploadTest2()" class="input-elements" id="upload-btn">
+        </div>
+        <p id="final-message-uploaded-course" class="final-message removeclass"></p>
+        <input type="button" value="Upload Course" onclick="finalupload()" class="final-upload-btn">
+    </div>
     <script>
+        const array=[]
+        const uploadTest2=async()=>{
+            console.log("in")
+            let title=document.getElementById("title").value
+            let desc=document.getElementById("description").value
+            let file=document.getElementById("video").files[0]
+            let obj={
+                title:title,
+                description:desc,
+                file:file
+            }
+            array.push(obj)
+            console.log(array)
+            document.getElementById("title").value=""
+            document.getElementById("description").value=""
+            document.getElementById("video").value=""
+        }
+
+        const finalupload=async()=>{
+            console.log(array)
+            let formData=new FormData();
+            array.forEach((data,i)=>{
+                formData.append("video",data.file)
+                formData.append(`title${i}`,data.title)
+                formData.append(`description${i}`,data.description)
+            })
+            const resp=await fetch('http://localhost:3001/uploadcourse/1212',{
+                method:"POST"
+                ,body:formData
+            })
+            const json=await resp.json()
+            console.log(json)
+            if(json.status===200){
+                array.splice(0, array.length)
+                document.querySelector('#final-message-uploaded-course').textContent=json.message
+                document.querySelector('#final-message-uploaded-course').classList.remove('removeclass')
+            }
+            console.log(array)
+        }
         const upload=async(type)=>{
             const formData=new FormData();
             if(type==="single"){
@@ -105,7 +211,6 @@
                     body:formData
                 })
                 const json=await resp.json()
-                console.log(json)
                 if(json.status===200){
                     document.querySelector('#singlefile').value=""
                     document.querySelector('#final-message-single').textContent=json.message
@@ -124,7 +229,7 @@
                 const json=await resp.json()
 
                 if(json.status===200){
-                    document.querySelector('#multiplevideofile').value=[]
+                    document.querySelector('#multiplevideofile').value=""
                     document.querySelector('#final-message-multiple-video').textContent=json.message
                     document.querySelector('#final-message-multiple-video').classList.remove('removeclass')
                 }
@@ -146,7 +251,7 @@
                 })
                 const json=await resp.json()
                 if(json.status===200){
-                    document.querySelector('#multiplefile').value=[]
+                    document.querySelector('#multiplefile').value=""
                     document.querySelector('#final-message-multiple-image').textContent=json.message
                     document.querySelector('#final-message-multiple-image').classList.remove('removeclass')
                 }

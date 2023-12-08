@@ -90,4 +90,15 @@ app.post('/multiplevideos/:id',uploadMultipleVideos.array('videos'),(req,res)=>{
     }
 })
 
+app.post('/uploadcourse/:id',uploadMultipleVideos.array('video'),(req,res)=>{
+    try{    
+        console.log(req.body)
+        console.log(req.files)
+        res.send({status:200,message:"Your Course Is Uploaded!!! Cheers!🥂"})
+    }catch(e){
+        console.log(e)
+        res.send({status:400,message:e.message})
+    }
+})
+
 app.listen(3001,()=>console.log('Running on 3001...'))
